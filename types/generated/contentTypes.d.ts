@@ -612,6 +612,41 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiEnrollmentEnrollment extends Struct.CollectionTypeSchema {
+  collectionName: 'enrollments';
+  info: {
+    displayName: 'Enrollment';
+    pluralName: 'enrollments';
+    singularName: 'enrollment';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    course: Schema.Attribute.Relation<'oneToOne', 'api::course.course'> &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    enrolledAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::enrollment.enrollment'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    student: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   collectionName: 'globals';
   info: {
@@ -1194,6 +1229,7 @@ declare module '@strapi/strapi' {
       'api::author.author': ApiAuthorAuthor;
       'api::category.category': ApiCategoryCategory;
       'api::course.course': ApiCourseCourse;
+      'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::global.global': ApiGlobalGlobal;
       'api::lesson.lesson': ApiLessonLesson;
       'plugin::content-releases.release': PluginContentReleasesRelease;
