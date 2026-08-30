@@ -1,7 +1,18 @@
+import type { Context } from 'koa';
+
 export default {
-  async getStats(ctx: any) {
-    const user = ctx.state.user;
-    if (!user || user.role?.name !== 'Platform Admin') {
+  async getStats(ctx: Context) {
+    if (!ctx.state.user) return ctx.unauthorized('You must be logged in');
+    console.log('DEBUG ctx.state.user.id:', ctx.state.user.id);
+    const authUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+      where: { id: ctx.state.user.id },
+      populate: ['role'],
+    });
+
+    console.log('DEBUG authUser:', JSON.stringify(authUser, null, 2));
+    console.log('DEBUG role name:', authUser?.role?.name);
+
+    if (!authUser || authUser.role?.name !== 'Platform Admin') {
       return ctx.forbidden('Admin access only');
     }
 
@@ -24,12 +35,26 @@ export default {
     }
 
     return {
-      data: {
-        totalUsers,
-        totalCourses,
-        totalEnrollments,
-        usersPerRole,
-      },
+      data: { totalUsers, totalCourses, totalEnrollments, usersPerRole },
     };
+  },
+
+  async getRoles(ctx: Context) {
+    if (!ctx.state.user) return ctx.unauthorized('You must be logged in');
+
+    const authUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+      where: { id: ctx.state.user.id },
+      populate: ['role'],
+    });
+
+    if (!authUser || authUser.role?.name !== 'Platform Admin') {
+      return ctx.forbidden('Admin access only');
+    }
+
+    const roles = await strapi.db.query('plugin::users-permissions.role').findMany({
+      select: ['id', 'name'],
+    });
+
+    return { data: roles };
   },
 };
